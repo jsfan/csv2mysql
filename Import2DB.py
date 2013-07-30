@@ -1,21 +1,24 @@
-#{'PRE':[{'SEARCH':{'query':<query>,'uid_marker':'<markername>'},
-# 	     'UPDATE':{'query':<query>,'uid_marker':'<markername>'},
-# 	     'INSERT':{'query':<query>,'uid_marker':'<markername>','fallback':<True|False>}},
-#	    ...],
-# 'IMPORT':[{'SEARCH':{'query':<query>,'uid_marker':'<markername>'},
-# 	     'UPDATE':{'query':<query>,'uid_marker':'<markername>'},
-# 	     'INSERT':{'query':<query>,'uid_marker':'<markername>','fallback':<True|False>}},
-#	    ...]
-#{'POST':[{'SEARCH':{'query':<query>,'uid_marker':'<markername>'},
-# 	     'UPDATE':{'query':<query>,'uid_marker':'<markername>'},
-# 	     'INSERT':{'query':<query>,'uid_marker':'<markername>','fallback':<True|False>}},
-#	    ...],
-#}
-
+import warnings
 import re
 import MySQLdb as mysql
 
 class Import2DB:
+    
+    """Imports list data into MySQL database according to templates"""
+
+    """{'PRE':[{'SEARCH':{'query':<query>,'uid_marker':'<markername>'},
+          'UPDATE':{'query':<query>,'uid_marker':'<markername>'},
+          'INSERT':{'query':<query>,'uid_marker':'<markername>','fallback':<True|False>}},
+        ...],
+        'IMPORT':[{'SEARCH':{'query':<query>,'uid_marker':'<markername>'},
+          'UPDATE':{'query':<query>,'uid_marker':'<markername>'},
+          'INSERT':{'query':<query>,'uid_marker':'<markername>','fallback':<True|False>}},
+        ...]
+        {'POST':[{'SEARCH':{'query':<query>,'uid_marker':'<markername>'},
+          'UPDATE':{'query':<query>,'uid_marker':'<markername>'},
+          'INSERT':{'query':<query>,'uid_marker':'<markername>','fallback':<True|False>}},
+        ...],
+        }"""
 
     def __init__(self, server, dbname, username, passwd):
         self.db = mysql.connect(host=server, user=username, passwd=passwd, db=dbname)
@@ -23,10 +26,8 @@ class Import2DB:
         self.updated = False
 
     def run_query(self,query):
-        # catch warnings
-        import warnings
         with warnings.catch_warnings():
-#            warnings.simplefilter('error', mysql.Warning)
+            warnings.simplefilter('error', mysql.Warning)
             res = False
             try:
                 res = self.cursor.execute(query)
@@ -79,6 +80,8 @@ class Import2DB:
 
         except KeyError:
             print 'No post-queries.'
+            
+        self.db.commit()
 
 
     def process_query(self, query, data):
@@ -101,7 +104,7 @@ class Import2DB:
             except KeyError:
                 insert_query = query['INSERT']
                 if not self.updated or 'fallback' not in insert_query or not insert_query['fallback']:
-                    insert_ret = self.replaceMarkers(insert_query['query'], data)
+                    insert_ret = self.replace_markers(insert_query['query'], data)
                     try:
                         self.run_query(insert_ret)
                     except mysql.Warning:
@@ -116,8 +119,7 @@ class Import2DB:
 
     def check_exists(self, search_template, data):
 
-        search_query = self.replaceMarkers(search_template, data)
-#        print searchQuery
+        search_query = self.replace_markers(search_template, data)
         try:
             self.run_query(search_query)
         except mysql.Warning:

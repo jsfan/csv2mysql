@@ -2,6 +2,8 @@ import smtplib
 from email.mime.text import MIMEText
 
 class Notify:
+    
+    """Sends an email to one or multiple recipients"""
 
     def send_message(self, msg_from, to, subject, body):
 

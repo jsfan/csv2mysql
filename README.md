@@ -11,7 +11,7 @@ base of any schema.
 
 The provided classes are
 
-* **EmailHandler:** Reads an email and extracts attached CSV files (untested!)
+* **EmailHandler:** Reads an email and extracts attached CSV files
 * **ParseCSV:** Parses passed CSV data into a list
 * **Import2DB:** Imports the lists returned by *ParseCSV* into a MySQL database according to a SQL template rule set
 * **Notify:** Can be used to send an email to notify someone of an import.
@@ -49,8 +49,6 @@ What happens is the following:
 
 For a full specification of the configuration dictionary, see the header of Import2DB.
 
-Due to a lack of time, the combination as provided here is not fully tested. The scripts have
-been used before, however, and should work fine. Nevertheless, if you are not a Python coder,
-you might consider trying something else.
+If you use the EmailHandler object, you will have to wrap the strings in a pseudo-file yourself to be able to pass them to the ParseCSV object. 
 
 Pull requests welcome.
